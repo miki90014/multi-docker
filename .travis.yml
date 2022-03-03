@@ -1,0 +1,21 @@
+sudo:  required
+services:
+  - docker
+
+before_install: 
+  - docker build -t miki90014/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run miki90014/react-test npm test -- --coverage #to stop test with returning 0 or error
+
+after_success:
+  - docker build -t miki90014/multi-client ./client
+  - docker build -t miki90014/multi-nginx ./nginx
+  - docker build -t miki90014/multi-server ./server
+  - docker build -t miki90014/multi-worker ./worker
+  #log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push miki90014/multi-client
+  - docker push miki90014/multi-nginx
+  - docker push miki90014/multi-server
+  - docker push miki90014/multi-worker
